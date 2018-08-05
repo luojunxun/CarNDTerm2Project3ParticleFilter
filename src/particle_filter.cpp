@@ -20,13 +20,14 @@
 
 using namespace std;
 
+static default_random_engine gen;
+
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// TODO: Set the number of particles. Initialize all particles to first position (based on estimates of 
 	//   x, y, theta and their uncertainties from GPS) and all weights to 1. 
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
 	num_particles = 100;
-	default_random_engine gen;
 	normal_distribution<double> dist_x(x, std[0]);
 	normal_distribution<double> dist_y(y, std[1]);
 	normal_distribution<double> dist_theta(theta, std[2]);
@@ -64,7 +65,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	}
 
 	// Add random Gaussian noise
-	default_random_engine gen;
+	//default_random_engine gen;
 	normal_distribution<double> dist_x(0.0, std_pos[0]);
 	normal_distribution<double> dist_y(0.0, std_pos[1]);
 	normal_distribution<double> dist_theta(0.0, std_pos[2]);
@@ -166,25 +167,30 @@ void ParticleFilter::resample() {
 	// TODO: Resample particles with replacement with probability proportional to their weight. 
 	// NOTE: You may find std::discrete_distribution helpful here.
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
-    // get all of the current weights
-  	std::vector<double> weights;
-  	for (int i = 0; i < num_particles; i++) {
-    	weights.push_back(particles[i].weight);
-  	}
-  
+	// get all of the current weights
+	std::vector<double> weights;
+	for (int i = 0; i < num_particles; i++) {
+		weights.push_back(particles[i].weight);
+	}
+
 	std::vector<Particle> particles_resample;
-	default_random_engine gen;
-	uniform_int_distribution<int> particle_index(0, num_particles - 1);
-	int index = particle_index(gen);
-	double max_weight = *max_element(weights.begin(), weights.end());
-	uniform_real_distribution<double> random_weight(0.0, max_weight * 2.0);
-	double beta = 0.0;
+	//default_random_engine gen;
+	//uniform_int_distribution<int> particle_index(0, num_particles - 1);
+	//int index = particle_index(gen);
+	//double max_weight = *max_element(weights.begin(), weights.end());
+	//uniform_real_distribution<double> random_weight(0.0, max_weight * 2.0);
+	//double beta = 0.0;
+	//for (int i = 0; i < num_particles; ++i) {
+	//	beta += random_weight(gen);
+	//	while (beta > weights[index]) {
+	//		beta -= weights[index];
+	//		index = (index + 1) % num_particles;
+	//	}
+	//	particles_resample.push_back(particles[index]);
+	//}
+	std::discrete_distribution<> d(weights.begin(), weights.end());
 	for (int i = 0; i < num_particles; ++i) {
-		beta += random_weight(gen);
-		while (beta > weights[index]) {
-			beta -= weights[index];
-			index = (index + 1) % num_particles;
-		}
+		int index = d(gen);
 		particles_resample.push_back(particles[index]);
 	}
 	particles = particles_resample;
